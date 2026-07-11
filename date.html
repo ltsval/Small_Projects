@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+/* ============================================================
+   IMPORTANT — SETUP STEP:
+   Replace the value of FORMSPREE_URL near the bottom of the
+   <script> with your own Formspree endpoint so answers reach
+   your email. See the chat message for the 2-minute setup.
+   ============================================================ */
+
+.bubble{
+    position:fixed;
+    background:#ff4d94;
+    color:white;
+    padding:10px 15px;
+    border-radius:20px;
+    font-size:14px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.2);
+    z-index:1000;
+    animation: fadeOut 4s forwards;
+}
+
+@keyframes fadeOut{
+    0%{opacity:1;}
+    80%{opacity:1;}
+    100%{opacity:0;}
+}
+
+.fullscreen-msg{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:linear-gradient(135deg,#ffb6d9,#ffe6f2);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:40px;
+    color:#ff4d94;
+    z-index:9999;
+    text-align:center;
+    padding:20px;
+}
+
+.heart{
+    position:fixed;
+    font-size:24px;
+    animation: fall 4s linear forwards;
+    z-index:10000;
+}
+
+@keyframes fall{
+    0%{
+        transform: translateY(-50px);
+        opacity:1;
+    }
+    100%{
+        transform: translateY(100vh);
+        opacity:0;
+    }
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:Arial;
+    background: linear-gradient(135deg,#ffb6d9,#ffe6f2);
+    padding: 20px;
+}
+
+.card{
+    background:white;
+    padding:clamp(20px, 4vw, 40px);
+    border-radius:25px;
+    text-align:center;
+    box-shadow:0 15px 40px rgba(0,0,0,0.15);
+    width:min(90%, 380px);
+}
+
+h1{
+    color:#ff4d94;
+    font-size:clamp(22px, 4vw, 32px);
+    margin-top: 0;
+}
+
+p{
+    font-size:clamp(14px, 2.5vw, 18px);
+}
+
+button{
+    padding:clamp(10px, 2vw, 14px) clamp(18px, 3vw, 28px);
+    margin:8px;
+    border:none;
+    border-radius:25px;
+    font-size:clamp(14px, 2.5vw, 18px);
+    cursor:pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.yes{
+    background:#ff4d94;
+    color:white;
+}
+
+.no{
+    background:#eee;
+}
+
+/* screens after "yes" */
+.screen { display: none; }
+.screen.active { display: block; }
+
+.choice-grid{
+    display:flex;
+    gap:12px;
+    justify-content:center;
+    margin: 18px 0;
+    flex-wrap: wrap;
+}
+
+.choice-card{
+    flex: 1 1 130px;
+    max-width: 150px;
+    background:#ffe6f2;
+    border: 2px solid transparent;
+    border-radius: 18px;
+    padding: 16px 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    color:#ff4d94;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.choice-card .emoji{ display:block; font-size:28px; margin-bottom:6px; }
+.choice-card.selected{ border-color:#ff4d94; transform: translateY(-2px); background:#ffd1e8; }
+
+.day-grid{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin: 16px 0;
+    flex-wrap: wrap;
+}
+
+.day-pill{
+    background:#eee;
+    border-radius:20px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    color:#555;
+    cursor:pointer;
+    border: 2px solid transparent;
+}
+.day-pill.selected{
+    background:#ff4d94;
+    color:white;
+    border-color:#ff4d94;
+}
+
+.submit-btn{
+    background:#ff4d94;
+    color:white;
+    width: 100%;
+    opacity: 0.5;
+    pointer-events: none;
+}
+.submit-btn.ready{ opacity:1; pointer-events:auto; }
+
+.status-note{
+    font-size: 13px;
+    color: #999;
+    min-height: 18px;
+    margin-top: 10px;
+}
+
+@media (max-width:600px){
+
+    .card{
+        padding:25px;
+    }
+
+    h1{
+        font-size:24px;
+    }
+
+    p{
+        font-size:16px;
+    }
+
+    button{
+        font-size:15px;
+        padding:10px 18px;
+    }
+
+    .fullscreen-msg{
+        font-size:clamp(26px, 5vw, 48px);
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card" id="askCard">
+    <h1>Hello huzz :p </h1>
+    <p>Lets hangout, dont click no</p>
+
+    <button class="yes" id="yesBtn" onclick="yesClick()">Yes</button>
+    <button class="no" id="noBtn" onclick="noClick()">No</button>
+
+    <p id="msg"></p>
+</div>
+
+<div class="card screen" id="pickCard">
+    <h1>Yay hehemuehe</h1>
+    <p>Okay, what do you want to do</p>
+
+    <div class="choice-grid" id="typeGrid">
+        <div class="choice-card" data-value="Baking date"><span class="emoji">🧁</span>Baking - prob brownies </div>
+        <div class="choice-card" data-value="Art date outside"><span class="emoji">🎨</span>Art portraits </div>
+    </div>
+
+    <p>and which days are you free?</p>
+    <div class="day-grid" id="dayGrid">
+        <div class="day-pill" data-value="Monday">Mon</div>
+        <div class="day-pill" data-value="Wednesday">Wed</div>
+        <div class="day-pill" data-value="Thursday">Thu</div>
+        <div class="day-pill" data-value="Friday">Fri</div>
+    </div>
+
+    <button class="submit-btn" id="submitBtn" onclick="submitChoice()"> Confirm :3</button>
+    <p class="status-note" id="statusNote">&nbsp;</p>
+</div>
+
+<div class="card screen" id="doneCard">
+    <h1 id="doneHeadline">Perfect ❤️</h1>
+    <p id="doneSub">He'll see it and lock in the plan.</p>
+</div>
+
+<script>
+
+let noCount = 0;
+
+let noMessages = [
+"Are you sure?",
+"Did you click no by mistake?",
+"Just say you hate me",
+"I'll keep calling you buddy",
+"yeaaa, must have plans with your other girlfriendsss",
+"I already planned it",
+"You are running out of No clicks :>",
+"Stop pressing No ughhh",
+"I’m waiting ",
+"Bro dont pmo",
+"I'll kill you if u dont stop saying no",
+"Whyy are u not clicking yes huhh",
+"Do you have somewhere else to be huh?",
+"Ok, yeah I didnt even want to",
+"You cant escape me",
+"PICK YES ALREADY",
+"I'll pull up to your house rn dont pmo",
+"Pendejo >:( "
+];
+
+function heartConfetti(){
+    for(let i=0;i<40;i++){
+        let heart = document.createElement("div");
+        heart.className = "heart";
+        heart.innerHTML = "💖";
+        heart.style.left = Math.random()*100 + "vw";
+        heart.style.animationDuration = (3 + Math.random()*2) + "s";
+        document.body.appendChild(heart);
+        setTimeout(()=> heart.remove(),5000);
+    }
+}
+
+function yesClick(){
+    heartConfetti();
+    document.getElementById('askCard').style.display = 'none';
+    document.getElementById('pickCard').classList.add('active');
+}
+
+function noClick(){
+
+    let yesBtn = document.querySelector(".yes");
+    let noBtn = document.getElementById("noBtn");
+
+    if(noCount < noMessages.length){
+
+        let bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.innerText = noMessages[noCount];
+        bubble.style.top = Math.random()*80 + "%";
+        bubble.style.left = Math.random()*80 + "%";
+        document.body.appendChild(bubble);
+        setTimeout(()=> bubble.remove(),4000);
+
+        noCount++;
+
+        // "no" shrinks a little each time instead of moving away
+        let scale = Math.max(0.15, 1 - noCount * 0.08);
+        noBtn.style.transform = "scale(" + scale + ")";
+        noBtn.style.opacity = Math.max(0.15, scale);
+
+        yesBtn.style.transform = "scale(" + (1 + noCount * 0.1) + ")";
+
+        // once it's basically invisible, treat further attempts as a yes
+        if (scale <= 0.15) {
+            noBtn.style.pointerEvents = "none";
+        }
+
+    } else {
+        yesClick();
+    }
+}
+
+// ---- date type + day picking ----
+let chosenType = null;
+let chosenDays = new Set();
+
+document.querySelectorAll('#typeGrid .choice-card').forEach(card => {
+    card.addEventListener('click', () => {
+        document.querySelectorAll('#typeGrid .choice-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        chosenType = card.dataset.value;
+        updateSubmitState();
+    });
+});
+
+document.querySelectorAll('#dayGrid .day-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+        pill.classList.toggle('selected');
+        const val = pill.dataset.value;
+        if (chosenDays.has(val)) chosenDays.delete(val);
+        else chosenDays.add(val);
+        updateSubmitState();
+    });
+});
+
+function updateSubmitState(){
+    const submitBtn = document.getElementById('submitBtn');
+    const ready = chosenType && chosenDays.size > 0;
+    submitBtn.classList.toggle('ready', ready);
+}
+
+// Replace this with your own Formspree endpoint (see setup instructions)
+const FORMSPREE_URL = "https://formspree.io/f/xlgyqydk";
+
+async function submitChoice(){
+    if (!chosenType || chosenDays.size === 0) return;
+
+    const statusNote = document.getElementById('statusNote');
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    statusNote.textContent = "sending...";
+
+    const daysList = Array.from(chosenDays).join(", ");
+
+    try {
+        await fetch(FORMSPREE_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
+            body: JSON.stringify({
+                dateType: chosenType,
+                availableDays: daysList,
+                message: `Anton picked: ${chosenType}, available: ${daysList}`
+            })
+        });
+    } catch (err) {
+        console.error("Formspree submit failed:", err);
+        // fail silently for the user — the moment stays sweet either way
+    }
+
+    document.getElementById('pickCard').classList.remove('active');
+    const doneCard = document.getElementById('doneCard');
+    doneCard.classList.add('active');
+    document.getElementById('doneHeadline').textContent = "Ur mine now ❤️";
+    document.getElementById('doneSub').textContent =
+        `${chosenType}, ${daysList} yippieeeee`;
+}
+
+</script>
+
+</body>
+</html>
