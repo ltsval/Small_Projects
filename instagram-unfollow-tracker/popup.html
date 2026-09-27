@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Instagram Tracker</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="header-title">
+        <div class="header-icon">IG</div>
+        <div>
+          <h1>Instagram Tracker</h1>
+          <div class="status-row">
+            <span id="statusDot" class="status-dot status-unknown"></span>
+            <span id="statusText" class="status-text">Checking status…</span>
+          </div>
+        </div>
+      </div>
+      <button id="refreshBtn" class="refresh-btn" title="Check now">
+        <svg id="refreshIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 4v6h6M20 20v-6h-6M20 9a8 8 0 00-14.6-3M4 15a8 8 0 0014.6 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span id="refreshLabel">Check now</span>
+      </button>
+    </header>
+
+    <div id="progressBar" class="progress-bar hidden">
+      <div class="progress-fill"></div>
+      <span id="progressText" class="progress-text">Connecting to Instagram…</span>
+    </div>
+
+    <div class="last-checked">
+      Last checked: <span id="lastChecked">never</span>
+    </div>
+
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="statFollowers">–</div>
+        <div class="stat-label">Followers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statFollowing">–</div>
+        <div class="stat-label">Following</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statMutuals">–</div>
+        <div class="stat-label">Mutuals</div>
+      </div>
+      <div class="stat-card highlight-amber">
+        <div class="stat-value" id="statNotFollowingBack">–</div>
+        <div class="stat-label">Not Following Back</div>
+      </div>
+      <div class="stat-card highlight-green">
+        <div class="stat-value" id="statNewFollowers">–</div>
+        <div class="stat-label">New Followers</div>
+      </div>
+      <div class="stat-card highlight-red">
+        <div class="stat-value" id="statUnfollowers">–</div>
+        <div class="stat-label">Unfollowers</div>
+      </div>
+    </section>
+
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="notFollowingBack">Not Following Back</button>
+      <button class="tab" data-tab="unfollowers">Unfollowers</button>
+      <button class="tab" data-tab="newFollowers">New Followers</button>
+      <button class="tab" data-tab="mutuals">Mutuals</button>
+    </nav>
+
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input id="searchInput" type="text" placeholder="Search usernames…" />
+    </div>
+
+    <main id="listContainer" class="list-container">
+      <!-- Populated by popup.js -->
+    </main>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
